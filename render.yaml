@@ -12,6 +12,8 @@ services:
         sync: false
       - key: SESSION_SECRET
         generateValue: true
+      - key: ADMIN_LEADER_EMAILS
+        value: 'kitrusp0st@gmail.com'
       - key: DISCORD_BOT_TOKEN
         sync: false
       - key: DISCORD_GUILD_ID
