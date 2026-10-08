@@ -65,10 +65,10 @@ export interface ServerNode {
   features: string[];
 }
 
-export const HERO_IMAGE_URL = '/src/assets/images/cs2_curs_hero_banner_1791453811574.jpg';
-export const CLAN_CREST_URL = '/src/assets/images/curs_clan_crest_1791453830325.jpg';
-export const MIRAGE_ARENA_URL = '/src/assets/images/crazypub_mirage_arena_1791453849278.jpg';
-export const INFERNO_ARENA_URL = '/src/assets/images/crazypub_inferno_arena_1791453864614.jpg';
+export const HERO_IMAGE_URL = '/Curs.CS2/assets/images/cs2_curs_hero_banner_1791453811574.jpg';
+export const CLAN_CREST_URL = '/Curs.CS2/assets/images/curs_clan_crest_1791453830325.jpg';
+export const MIRAGE_ARENA_URL = '/Curs.CS2/assets/images/crazypub_mirage_arena_1791453849278.jpg';
+export const INFERNO_ARENA_URL = '/Curs.CS2/assets/images/crazypub_inferno_arena_1791453864614.jpg';
 
 // Список состава изначально пуст, так как состав еще не избран
 export const INITIAL_CLAN_ROSTER: ClanPlayer[] = [];
