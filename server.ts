@@ -8,6 +8,7 @@ import {
   ensureInitialSeed,
   getOrCreateUser,
   getAllUsers,
+  inviteGoogleAdmin,
   updateUserRole,
   getRolesTable,
   updateRoleDiscordMapping,
@@ -1821,6 +1822,28 @@ app.delete(
       res.json({ ok: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message || 'Ошибка удаления заметки' });
+    }
+  }
+);
+
+// Only the verified Google owner may invite new Google admins.
+app.post('/api/admin/developers/invite', requireRole(['leader']), csrfProtection,
+  async (req: AuthRequest, res: Response) => {
+    const owner = (process.env.ADMIN_LEADER_EMAILS || '').split(',').map((v) => v.trim().toLowerCase());
+    if (req.adminContext?.authProvider !== 'firebase' || !owner.includes(req.adminContext.email.toLowerCase())) {
+      return res.status(403).json({ error: 'Только владелец Google может добавлять разработчиков.' });
+    }
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    const role = req.body?.role;
+    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || !['deputy', 'moderator'].includes(role)) {
+      return res.status(400).json({ error: 'Укажите корректный email и роль.' });
+    }
+    if (owner.includes(email)) return res.status(400).json({ error: 'Владелец уже имеет доступ.' });
+    try {
+      const user = await inviteGoogleAdmin(email, role);
+      res.status(201).json({ id: user.id, email: user.email, role: user.discordRole });
+    } catch (err) {
+      res.status(500).json({ error: 'Не удалось добавить аккаунт.' });
     }
   }
 );
