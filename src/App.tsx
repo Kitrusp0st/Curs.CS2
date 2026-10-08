@@ -141,6 +141,8 @@ const ROLE_LABELS: Record<AdminRole, string> = {
   member: 'Участник (Без доступа в админку)',
 };
 
+const CLAN_DISCORD_INVITE = 'https://discord.gg/5QwH43Wd9';
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<PageTab>('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -854,7 +856,7 @@ export default function App() {
                       </button>
 
                       <a
-                        href={discordStatus?.inviteUrl || 'https://discord.gg/curs-clan'}
+                        href={CLAN_DISCORD_INVITE}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-6 py-3.5 text-sm font-semibold bg-[#121218] hover:bg-white/10 text-white border border-white/15 rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap"
@@ -963,7 +965,7 @@ export default function App() {
                         В войсе: {discordStatus?.voiceActiveCount ?? 9} игроков
                       </span>
                       <a
-                        href={discordStatus?.inviteUrl || 'https://discord.gg/curs-clan'}
+                        href={CLAN_DISCORD_INVITE}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-5 py-2.5 text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition-colors whitespace-nowrap"
@@ -1465,6 +1467,7 @@ export default function App() {
                     <p>01. Возраст от 16 лет (возможны исключения по решению Лидера).</p>
                     <p>02. Показатель K/D на паблике CrazyPub не ниже 1.35.</p>
                     <p>03. Наличие рабочего микрофона и присутствие на Discord-сервере клана.</p>
+                    <a href={CLAN_DISCORD_INVITE} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-amber-400 underline underline-offset-4 hover:text-amber-300">Вступить в Discord клана CURS ↗</a>
                   </div>
                 </div>
 
@@ -1565,7 +1568,7 @@ export default function App() {
                         required
                         value={appDiscord}
                         onChange={(e) => setAppDiscord(e.target.value)}
-                        placeholder="discord.gg/... или username#0000"
+                        placeholder="Ваш Discord username (например, player123)"
                         className="w-full px-3.5 py-2.5 text-sm bg-[#09090D] border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-rose-500"
                       />
                     </div>
