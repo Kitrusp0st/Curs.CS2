@@ -903,76 +903,12 @@ export default function App() {
             <section className="py-16 lg:py-20 border-b border-white/[0.08]">
               <div className="max-w-[1280px] mx-auto px-6 lg:px-12">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                  {/* Discord Live Status Block (5 cols) */}
-                  <div className="lg:col-span-5 bg-[#121218] border border-white/[0.08] rounded-xl p-6 sm:p-8 flex flex-col justify-between">
-                    <div className="space-y-5">
-                      <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <div className="text-xs text-rose-400 font-semibold">
-                            Discord Widget API · Обновление каждые 45 сек
-                          </div>
-                          <h2 className="text-xl font-semibold text-white mt-1">
-                            {discordStatus?.guildName || 'CURS · Official Clan Discord'}
-                          </h2>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={fetchDiscordStatus}
-                          className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
-                          title="Обновить онлайн Discord"
-                        >
-                          <RefreshCw className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      {/* Real-time Counters */}
-                      <div className="grid grid-cols-2 gap-4 p-4 bg-[#09090D] border border-white/[0.08] rounded-lg">
-                        <div>
-                          <div className="text-xs text-slate-400">Сейчас онлайн</div>
-                          <div className="text-2xl sm:text-3xl font-semibold text-emerald-400 font-mono-tabular mt-1">
-                            {discordStatus?.isLiveApi ? discordStatus.onlineCount : '—'}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-slate-400">Всего на сервере</div>
-                          <div className="text-2xl sm:text-3xl font-semibold text-white font-mono-tabular mt-1">
-                            {discordStatus?.isLiveApi ? discordStatus.totalMembers : '—'}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Active Players Sample */}
-                      <div className="space-y-2">
-                        <div className="text-xs text-slate-400">
-                          Активные участники в голосовых и игровых каналах:
-                        </div>
-                        <div className="divide-y divide-white/[0.06] border border-white/[0.06] rounded-lg bg-[#09090D]">
-                          {(discordStatus?.onlineMembersSample || []).slice(0, 4).map((m) => (
-                            <div
-                              key={m.id}
-                              className="px-3.5 py-2.5 flex items-center justify-between text-xs"
-                            >
-                              <span className="font-medium text-white">{m.username}</span>
-                              <span className="text-slate-400">{m.game || 'В сети'}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 pt-5 border-t border-white/[0.08] flex items-center justify-between gap-4">
-                      <span className="text-xs text-slate-400">
-                        В войсе: {discordStatus?.isLiveApi ? 'Н/Д' : '—'} игроков
-                      </span>
-                      <a
-                        href={CLAN_DISCORD_INVITE}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-5 py-2.5 text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition-colors whitespace-nowrap"
-                      >
-                        Присоединиться к Discord
-                      </a>
-                    </div>
+                  {/* Discord community link without online counters */}
+                  <div className="lg:col-span-5 bg-[#121218] border border-white/[0.08] rounded-xl p-6 sm:p-8 flex flex-col justify-center gap-5">
+                    <div className="text-xs text-rose-400 font-semibold">Сообщество CURS</div>
+                    <h2 className="text-2xl font-semibold text-white">Наш Discord</h2>
+                    <p className="text-sm text-slate-400">Общайся с участниками клана, находи команду и узнавай о событиях.</p>
+                    <a href={CLAN_DISCORD_INVITE} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-5 py-3 text-sm font-semibold bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition-colors">Присоединиться к Discord ↗</a>
                   </div>
 
                   {/* Mini-Top CrazyPub Block (7 cols) */}
