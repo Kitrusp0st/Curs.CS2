@@ -930,13 +930,13 @@ export default function App() {
                         <div>
                           <div className="text-xs text-slate-400">Сейчас онлайн</div>
                           <div className="text-2xl sm:text-3xl font-semibold text-emerald-400 font-mono-tabular mt-1">
-                            {discordStatus?.onlineCount ?? 42}
+                            {discordStatus?.isLiveApi ? discordStatus.onlineCount : '—'}
                           </div>
                         </div>
                         <div>
                           <div className="text-xs text-slate-400">Всего на сервере</div>
                           <div className="text-2xl sm:text-3xl font-semibold text-white font-mono-tabular mt-1">
-                            {discordStatus?.totalMembers ?? 186}
+                            {discordStatus?.isLiveApi ? discordStatus.totalMembers : '—'}
                           </div>
                         </div>
                       </div>
@@ -962,7 +962,7 @@ export default function App() {
 
                     <div className="mt-6 pt-5 border-t border-white/[0.08] flex items-center justify-between gap-4">
                       <span className="text-xs text-slate-400">
-                        В войсе: {discordStatus?.voiceActiveCount ?? 9} игроков
+                        В войсе: {discordStatus?.isLiveApi ? 'Н/Д' : '—'} игроков
                       </span>
                       <a
                         href={CLAN_DISCORD_INVITE}
