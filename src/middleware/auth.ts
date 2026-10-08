@@ -21,7 +21,10 @@ export interface AuthRequest extends Request {
   adminContext?: AuthUserContext;
 }
 
-const SESSION_SECRET = process.env.SESSION_SECRET || 'curs-clan-secret-key-crazypub-2026';
+const SESSION_SECRET = process.env.SESSION_SECRET;
+if (!SESSION_SECRET || SESSION_SECRET.length < 32) {
+  throw new Error('SESSION_SECRET must be set to a random value of at least 32 characters');
+}
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 
 export function signAdminSessionCookie(payload: AuthUserContext): string {
