@@ -652,6 +652,12 @@ export default function App() {
         </button>
 
         <button type="button" aria-label="Открыть меню" aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden rounded-lg border border-white/20 px-3 py-2 text-sm text-white">{mobileMenuOpen ? 'Закрыть ✕' : '☰ Меню'}</button>
+        {mobileMenuOpen && <div className="absolute left-0 right-0 top-16 z-50 flex flex-col gap-2 border-b border-white/10 bg-[#09090D] p-4 shadow-2xl md:hidden">
+          {([['home','Главная'],['about','О клане'],['roster','Состав'],['top','Рейтинг'],['apply','Вступление'],['docs','Документы']] as const).map(([tab,label]) => (
+            <button key={tab} type="button" className="rounded-lg px-4 py-3 text-left text-white hover:bg-white/10" onClick={() => {setActiveTab(tab);setMobileMenuOpen(false);}}>{label}</button>
+          ))}
+          {isTrustedStaff && <button type="button" className="rounded-lg px-4 py-3 text-left text-rose-400 hover:bg-white/10" onClick={() => {setActiveTab('admin');setMobileMenuOpen(false);}}>Админ-панель</button>}
+        </div>}
         <nav className="hidden md:flex items-center gap-7 text-sm">
           <button
             type="button"
