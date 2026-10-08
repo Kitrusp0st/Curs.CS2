@@ -126,12 +126,12 @@ export const resolveAuthContext = async (
       const email = decodedToken.email || 'user@curs.clan';
       const displayName = decodedToken.name || email.split('@')[0];
 
-      const leaderEmails = (process.env.ADMIN_LEADER_EMAILS || 'kanapievanuar30@gmail.com')
+      const leaderEmails = (process.env.ADMIN_LEADER_EMAILS || '')
         .split(',')
         .map((e) => e.trim().toLowerCase());
       const defaultRole: AdminRole = leaderEmails.includes(email.toLowerCase())
         ? 'leader'
-        : 'leader';
+        : 'member';
 
       const dbUser = await getOrCreateUser(
         decodedToken.uid,
