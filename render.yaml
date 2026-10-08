@@ -15,4 +15,6 @@ services:
       - key: DISCORD_BOT_TOKEN
         sync: false
       - key: DISCORD_GUILD_ID
-        sync: false
+        value: '1547252610044665889'
+      - key: DISCORD_INVITE_URL
+        value: 'https://discord.gg/5QwH43Wd9'
