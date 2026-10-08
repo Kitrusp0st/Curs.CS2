@@ -180,6 +180,8 @@ export default function App() {
   const [adminLogs, setAdminLogs] = useState<AuditLogRecord[]>([]);
   const [adminUsers, setAdminUsers] = useState<UserRecord[]>([]);
   const [adminFeedback, setAdminFeedback] = useState<string | null>(null);
+  const [developerEmail, setDeveloperEmail] = useState('');
+  const [developerRole, setDeveloperRole] = useState<'deputy' | 'moderator'>('moderator');
   const [adminError, setAdminError] = useState<string | null>(null);
 
   // Admin Forms
@@ -618,6 +620,22 @@ export default function App() {
     } catch (err: any) {
       setAdminError(err.message);
     }
+  };
+
+  const handleInviteDeveloper = async () => {
+    setAdminError(null);
+    try {
+      const headers = await buildAuthHeaders(true);
+      const response = await fetch('/api/admin/developers/invite', {
+        method: 'POST', headers, credentials: 'include',
+        body: JSON.stringify({ email: developerEmail, role: developerRole }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Ошибка добавления');
+      setDeveloperEmail('');
+      setAdminFeedback('Google-аккаунт добавлен: ' + data.email);
+      await fetchAdminDashboard();
+    } catch (err: any) { setAdminError(err.message || 'Ошибка добавления'); }
   };
 
   // Admin Leader: Change User Role
@@ -2132,6 +2150,18 @@ export default function App() {
                         </p>
                       </div>
 
+                      <div className="p-4 bg-[#09090D] border border-rose-500/20 rounded-lg space-y-3">
+                        <h4 className="text-sm font-semibold text-white">Разработчики · Google</h4>
+                        <p className="text-xs text-slate-400">Владелец: kitrusp0st@gmail.com. Добавляй Google-аккаунты по email. Доступ появится после входа через Google.</p>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <input type="email" value={developerEmail} onChange={(e) => setDeveloperEmail(e.target.value)} placeholder="email@gmail.com" aria-label="Google email разработчика" className="flex-1 min-w-0 bg-[#121218] border border-white/15 rounded-lg px-3 py-2 text-sm text-white" />
+                          <select value={developerRole} onChange={(e) => setDeveloperRole(e.target.value as 'deputy' | 'moderator')} aria-label="Роль разработчика" className="bg-[#121218] border border-white/15 rounded-lg px-3 py-2 text-sm text-white">
+                            <option value="deputy">Разработчик</option>
+                            <option value="moderator">Модератор</option>
+                          </select>
+                          <button type="button" onClick={handleInviteDeveloper} disabled={!developerEmail.includes('@')} className="bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-semibold">Добавить</button>
+                        </div>
+                      </div>
                       <div className="space-y-3">
                         {adminUsers.map((u) => (
                           <div
