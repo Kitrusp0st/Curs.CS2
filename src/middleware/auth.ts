@@ -141,11 +141,16 @@ export const resolveAuthContext = async (
         defaultRole
       );
 
+      // The configured owner cannot be demoted by stale stored role data.
+      const effectiveRole: AdminRole = leaderEmails.includes(email.toLowerCase())
+        ? 'leader'
+        : (dbUser.discordRole as AdminRole) || 'member';
+
       return {
         uid: decodedToken.uid,
         email: dbUser.email,
         displayName: dbUser.displayName || displayName,
-        role: (dbUser.discordRole as AdminRole) || defaultRole,
+        role: effectiveRole,
         authProvider: 'firebase',
         isSuspended: Boolean(dbUser.isSuspended),
       };
