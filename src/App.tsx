@@ -144,6 +144,7 @@ const ROLE_LABELS: Record<AdminRole, string> = {
 export default function App() {
   const [activeTab, setActiveTab] = useState<PageTab>('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [newsSearch, setNewsSearch] = useState('');
 
   // Auth & Admin state
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
@@ -1063,8 +1064,12 @@ export default function App() {
                   </div>
                 </div>
 
+                <label className="block max-w-md">
+                  <span className="sr-only">Поиск новостей</span>
+                  <input type="search" value={newsSearch} onChange={(event) => setNewsSearch(event.target.value)} placeholder="Поиск по новостям и категориям" className="w-full rounded-xl border border-white/15 bg-[#15151d] px-4 py-3 text-white placeholder:text-slate-400 focus:border-rose-500 focus:outline-none" />
+                </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {news.map((item) => (
+                  {news.filter(item => [item.title,item.content,item.category].some(value => value.toLowerCase().includes(newsSearch.trim().toLowerCase()))).map((item) => (
                     <article
                       key={item.id}
                       className="bg-[#121218] border border-white/[0.08] rounded-xl p-6 sm:p-8 flex flex-col justify-between"
