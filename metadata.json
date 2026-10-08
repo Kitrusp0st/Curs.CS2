@@ -1,0 +1,8 @@
+{
+  "name": "[Curs] — Клан CS2 на паблике Crazypub",
+  "description": "Официальный сайт клана [Curs] в Counter-Strike 2 на паблик-сервере Crazypub: основной ростер, статистика игроков, результаты клан-варов, прицелы и подача заявки на вступление.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-display: 'Unbounded', sans-serif;
+    --font-sans: 'Manrope', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --curs-accent: #e11d48;
+    --curs-accent-rgb: 225, 29, 72;
+    --curs-bg: #09090D;
+    --curs-surface: #0E0E14;
+    --curs-card: #12121A;
+    --curs-text: #F8FAFC;
+    --curs-muted: #94A3B8;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--curs-bg);
+    color: var(--curs-text);
+    letter-spacing: 0.01em;
+    overflow-x: hidden;
+    transition: background-color 0.35s ease, color 0.35s ease;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  .font-mono-tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Keyframes for tactical button & section animations */
+@keyframes cursShimmerSweep {
+  0% {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(220%) skewX(-18deg);
+  }
+}
+
+@keyframes cursSectionEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cursPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(var(--curs-accent-rgb), 0.45), 0 6px 20px -4px rgba(var(--curs-accent-rgb), 0.38);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(var(--curs-accent-rgb), 0), 0 10px 26px -2px rgba(var(--curs-accent-rgb), 0.55);
+  }
+}
+
+.animate-section-enter {
+  animation: cursSectionEnter 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Primary Tactical Button with Shimmer & Dynamic Accent Glow */
+.btn-curs-primary {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--curs-accent);
+  color: #ffffff;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.25s ease,
+              filter 0.2s ease;
+  box-shadow: 0 4px 16px -3px rgba(var(--curs-accent-rgb), 0.42);
+}
+
+.btn-curs-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.26) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateX(-140%) skewX(-18deg);
+  pointer-events: none;
+}
+
+.btn-curs-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 8px 25px -3px rgba(var(--curs-accent-rgb), 0.62);
+}
+
+.btn-curs-primary:hover:not(:disabled)::after {
+  animation: cursShimmerSweep 0.65s ease-out;
+}
+
+.btn-curs-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.96);
+}
+
+/* Pulse animation mode when selected in theme settings */
+[data-btn-anim="tactical_pulse"] .btn-curs-primary {
+  animation: cursPulseGlow 2.6s infinite;
+}
+
+/* Secondary Tactical Button */
+.btn-curs-secondary {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.2s ease,
+              background-color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+.btn-curs-secondary:hover:not(:disabled) {
+  transform: translateY(-1.5px);
+  border-color: rgba(var(--curs-accent-rgb), 0.55);
+  box-shadow: 0 6px 18px -6px rgba(var(--curs-accent-rgb), 0.28);
+}
+
+.btn-curs-secondary:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+}
+
+/* Interactive Tactical Card */
+.card-curs-interactive {
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.24s ease,
+              box-shadow 0.24s ease;
+}
+
+.card-curs-interactive:hover {
+  transform: translateY(-3px);
+  border-color: rgba(var(--curs-accent-rgb), 0.45);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.6),
+              0 0 20px -6px rgba(var(--curs-accent-rgb), 0.22);
+}
+
+/* Dynamic accent utility classes */
+.text-curs-accent {
+  color: var(--curs-accent);
+}
+
+.bg-curs-accent {
+  background-color: var(--curs-accent);
+}
+
+.border-curs-accent {
+  border-color: var(--curs-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
