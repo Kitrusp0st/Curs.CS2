@@ -143,6 +143,7 @@ const ROLE_LABELS: Record<AdminRole, string> = {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<PageTab>('home');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Auth & Admin state
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
@@ -650,6 +651,7 @@ export default function App() {
           CURS
         </button>
 
+        <button type="button" aria-label="Открыть меню" aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden rounded-lg border border-white/20 px-3 py-2 text-sm text-white">{mobileMenuOpen ? 'Закрыть ✕' : '☰ Меню'}</button>
         <nav className="hidden md:flex items-center gap-7 text-sm">
           <button
             type="button"
