@@ -486,6 +486,16 @@ export async function getOrCreateUser(
     return existing;
   }
 
+  // Claim an invitation only after the Google ID token has been verified.
+  const pending = store.users.find((u) => u.uid.startsWith('pending-google:') && u.email.toLowerCase() === email.toLowerCase());
+  if (pending && !discordId) {
+    pending.uid = uid;
+    pending.displayName = displayName || pending.displayName;
+    pending.lastActiveAt = nowIso;
+    saveStore();
+    return pending;
+  }
+
   const newUser: UserRecord = {
     id: allocId(store),
     uid,
@@ -500,6 +510,33 @@ export async function getOrCreateUser(
   store.users.push(newUser);
   saveStore();
   return newUser;
+}
+
+export async function inviteGoogleAdmin(email: string, role: 'deputy' | 'moderator') {
+  const store = loadStore();
+  const normalized = email.trim().toLowerCase();
+  const existing = store.users.find((u) => u.email.toLowerCase() === normalized && !u.discordId);
+  if (existing) {
+    existing.discordRole = role;
+    existing.isSuspended = false;
+    saveStore();
+    return existing;
+  }
+  const now = new Date().toISOString();
+  const pending: UserRecord = {
+    id: allocId(store),
+    uid: 'pending-google:' + normalized,
+    email: normalized,
+    displayName: normalized.split('@')[0],
+    discordId: null,
+    discordRole: role,
+    isSuspended: false,
+    lastActiveAt: now,
+    createdAt: now,
+  };
+  store.users.push(pending);
+  saveStore();
+  return pending;
 }
 
 export async function getUserByUid(uid: string) {
