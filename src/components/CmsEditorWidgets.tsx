@@ -33,19 +33,19 @@ export interface MediaRecordItem {
 const BUILTIN_CLAN_ASSETS = [
   {
     name: 'Эмблема клана CURS',
-    url: '/src/assets/images/curs_clan_crest_1791453830325.jpg',
+    url: '/assets/images/curs_clan_crest_1791453830325.jpg',
   },
   {
     name: 'Главный баннер CS2 Оперативники',
-    url: '/src/assets/images/cs2_curs_hero_banner_1791453811574.jpg',
+    url: '/assets/images/cs2_curs_hero_banner_1791453811574.jpg',
   },
   {
     name: 'Арена CrazyPub #1 — Mirage',
-    url: '/src/assets/images/crazypub_mirage_arena_1791453849278.jpg',
+    url: '/assets/images/crazypub_mirage_arena_1791453849278.jpg',
   },
   {
     name: 'Арена CrazyPub #2 — Inferno',
-    url: '/src/assets/images/crazypub_inferno_arena_1791453864614.jpg',
+    url: '/assets/images/crazypub_inferno_arena_1791453864614.jpg',
   },
 ];
 
