@@ -265,99 +265,52 @@ interface DiscordStatusCache {
 }
 
 let discordCache: DiscordStatusCache = {
-  guildName: 'CURS · Official Clan Discord',
-  onlineCount: 44,
-  totalMembers: 192,
-  inviteUrl: process.env.DISCORD_INVITE_URL || 'https://discord.gg/curs-clan',
-  voiceActiveCount: 9,
-  onlineMembersSample: [
-    { id: '1', username: '[CURS] Vortex', status: 'online', game: 'Counter-Strike 2' },
-    { id: '2', username: '[CURS] K1ngShatter', status: 'online', game: 'Counter-Strike 2' },
-    { id: '3', username: '[CURS] RazeN', status: 'dnd', game: 'CrazyPub #1 Mirage' },
-    { id: '4', username: '[CURS] Shadow', status: 'online', game: 'Counter-Strike 2' },
-  ],
-  updatedAt: Date.now(),
+  guildName: 'CURS · Discord',
+  onlineCount: 0,
+  totalMembers: 0,
+  inviteUrl: process.env.DISCORD_INVITE_URL || 'https://discord.gg/5QwH43Wd9',
+  voiceActiveCount: 0,
+  onlineMembersSample: [],
+  updatedAt: 0,
   isLiveApi: false,
 };
 
 app.get('/api/discord/status', async (_req: Request, res: Response) => {
-  await initSeedOnce();
-  const cms = await getCmsConfig('published');
-  const guildId = cms.integrations?.discordGuildId || process.env.DISCORD_GUILD_ID;
+  const guildId = process.env.DISCORD_GUILD_ID;
   const botToken = process.env.DISCORD_BOT_TOKEN;
-  const configuredInvite =
-    cms.integrations?.discordInviteUrl || cms.discordInviteUrl || process.env.DISCORD_INVITE_URL;
-  const pollSec = Math.max(15, Number(cms.integrations?.discordPollIntervalSec || 45));
-
   const now = Date.now();
-  if (now - discordCache.updatedAt < pollSec * 1000 && discordCache.isLiveApi) {
+  if (discordCache.isLiveApi && now - discordCache.updatedAt < 45000) {
     return res.json(discordCache);
   }
-
-  if (guildId && guildId !== 'YOUR_DISCORD_GUILD_ID') {
-    try {
-      const widgetRes = await fetch(
-        `https://discord.com/api/guilds/${guildId}/widget.json`,
-        { signal: AbortSignal.timeout(4000) }
-      );
-
-      let onlineCount = discordCache.onlineCount;
-      let guildName = discordCache.guildName;
-      let inviteUrl = configuredInvite || discordCache.inviteUrl;
-      let sample = discordCache.onlineMembersSample;
-      let voiceCount = 0;
-
-      if (widgetRes.ok) {
-        const widgetData: any = await widgetRes.json();
-        onlineCount = widgetData.presence_count ?? onlineCount;
-        guildName = widgetData.name || guildName;
-        if (widgetData.instant_invite) inviteUrl = widgetData.instant_invite;
-        if (Array.isArray(widgetData.members)) {
-          sample = widgetData.members.slice(0, 8).map((m: any) => ({
-            id: m.id,
-            username: m.username,
-            status: m.status || 'online',
-            game: m.game?.name || 'Counter-Strike 2',
-          }));
-          voiceCount = widgetData.members.filter((m: any) => m.channel_id).length;
-        }
-      }
-
-      let totalMembers = Math.max(onlineCount * 3, discordCache.totalMembers);
-      if (botToken && botToken !== 'YOUR_DISCORD_BOT_TOKEN') {
-        const guildRes = await fetch(
-          `https://discord.com/api/v10/guilds/${guildId}?with_counts=true`,
-          {
-            headers: { Authorization: `Bot ${botToken}` },
-            signal: AbortSignal.timeout(4000),
-          }
-        );
-        if (guildRes.ok) {
-          const guildData: any = await guildRes.json();
-          totalMembers = guildData.approximate_member_count ?? totalMembers;
-          onlineCount = guildData.approximate_presence_count ?? onlineCount;
-        }
-      }
-
-      discordCache = {
-        guildName,
-        onlineCount,
-        totalMembers,
-        inviteUrl,
-        voiceActiveCount: voiceCount,
-        onlineMembersSample: sample,
-        updatedAt: now,
-        isLiveApi: true,
-      };
-    } catch {
-      discordCache.updatedAt = now;
-    }
-  } else {
-    discordCache.inviteUrl = configuredInvite || discordCache.inviteUrl;
-    discordCache.updatedAt = now;
+  if (!guildId || !botToken) {
+    return res.json({ ...discordCache, isLiveApi: false, updatedAt: now });
   }
-
-  res.json(discordCache);
+  try {
+    const guildRes = await fetch(
+      `https://discord.com/api/v10/guilds/${encodeURIComponent(guildId)}?with_counts=true`,
+      {
+        headers: { Authorization: `Bot ${botToken}` },
+        signal: AbortSignal.timeout(6000),
+      }
+    );
+    if (!guildRes.ok) throw new Error(`Discord API HTTP ${guildRes.status}`);
+    const guildData: any = await guildRes.json();
+    discordCache = {
+      guildName: guildData.name || 'CURS · Discord',
+      onlineCount: guildData.approximate_presence_count ?? 0,
+      totalMembers: guildData.approximate_member_count ?? 0,
+      inviteUrl: process.env.DISCORD_INVITE_URL || 'https://discord.gg/5QwH43Wd9',
+      // REST guild endpoint does not expose live voice states.
+      voiceActiveCount: 0,
+      onlineMembersSample: [],
+      updatedAt: now,
+      isLiveApi: true,
+    };
+    res.json(discordCache);
+  } catch (error) {
+    console.error('Discord status request failed:', error);
+    res.json({ ...discordCache, isLiveApi: false, updatedAt: now });
+  }
 });
 
 // ============================================================================
