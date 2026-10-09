@@ -458,6 +458,10 @@ export default function App() {
     setAppSubmitting(true);
 
     try {
+      // Fetch a fresh signed challenge immediately before submitting to avoid 10-minute expiry.
+      const challengeResponse = await fetch(`${API_BASE_URL}/api/captcha/challenge`, { cache: 'no-store' });
+      if (!challengeResponse.ok) throw new Error('Не удалось обновить проверку «Я не робот». Попробуйте ещё раз.');
+      const freshChallenge = await challengeResponse.json();
       const headers = await buildAuthHeaders(true);
       const res = await fetch(`${API_BASE_URL}/api/applications`, {
         method: 'POST',
@@ -469,7 +473,7 @@ export default function App() {
           kdRatio: appKd,
           discordLink: appDiscord,
           experience: appExperience,
-          captchaToken,
+          captchaToken: freshChallenge.token,
           captchaAnswer: captchaChecked,
           rulesAccepted: true,
         }),
