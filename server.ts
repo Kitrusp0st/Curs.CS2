@@ -715,7 +715,7 @@ app.get('/api/captcha/challenge', (_req: Request, res: Response) => {
 });
 
 function validCaptcha(token: unknown, answer: unknown): boolean {
-  if (answer !== true || typeof token !== 'string' || !/^\\d+:\\d+:[a-f0-9]{64}$/.test(token)) return false;
+  if (answer !== true || typeof token !== 'string' || !/^\d+:\d+:[a-f0-9]{64}$/.test(token)) return false;
   const [expiresText, nonce, signature] = token.split(':');
   const expires = Number(expiresText);
   if (expires < Date.now() || expires > Date.now() + 10 * 60 * 1000) return false;
