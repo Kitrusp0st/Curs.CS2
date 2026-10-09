@@ -107,6 +107,8 @@ interface ApplicationRecord {
   kdRatio: string;
   status: 'pending' | 'accepted' | 'rejected';
   reviewedBy?: string;
+  applicantUid?: string;
+  applicantEmail?: string;
   createdAt?: string;
 }
 
@@ -154,6 +156,7 @@ export default function App() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [applicationBans, setApplicationBans] = useState<Array<{uid:string;email:string;until:string|null;reason:string}>>([]);
   const [googleLoginTarget, setGoogleLoginTarget] = useState<PageTab>('profile');
 
   // Public data states
@@ -313,6 +316,7 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         setAdminApplications(data.applications || []);
+        fetch(`${API_BASE_URL}/api/admin/application-bans`, { headers, credentials: 'include' }).then(r => r.ok ? r.json() : []).then(setApplicationBans).catch(() => {});
         setAdminNotes(data.notes || []);
         setAdminLogs(data.logs || []);
         setRoster(data.roster || []);
@@ -431,6 +435,19 @@ export default function App() {
     setGoogleLoginTarget(target);
     setAuthError(null);
     setShowAuthModal(true);
+  };
+
+  const changeApplicationBan = async (uid: string, durationHours: number | null) => {
+    if (!uid) return;
+    const reason = durationHours === null ? '' : window.prompt('Причина блокировки заявок:', 'Многократная подача заявок');
+    if (durationHours !== null && reason === null) return;
+    const headers = await buildAuthHeaders(true);
+    const res = await fetch(`${API_BASE_URL}/api/admin/application-bans${durationHours === null ? '/' + encodeURIComponent(uid) : ''}`, {
+      method: durationHours === null ? 'DELETE' : 'POST', headers, credentials: 'include',
+      ...(durationHours === null ? {} : { body: JSON.stringify({ uid, durationHours, reason }) }),
+    });
+    if (!res.ok) { const data = await res.json(); window.alert(data.error || 'Не удалось изменить блокировку'); return; }
+    await fetchAdminDashboard();
   };
 
   // Submit clan application
@@ -1757,6 +1774,7 @@ export default function App() {
                       <h2 className="text-lg font-semibold text-white">
                         Заявки на вступление из базы данных PostgreSQL
                       </h2>
+                      {applicationBans.length > 0 && <div className="space-y-2 rounded-lg border border-rose-500/30 p-4"><h3 className="font-semibold text-rose-300">Блокировки подачи заявок</h3>{applicationBans.map(b => <div key={b.uid} className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-300"><span>{b.email || b.uid} · {b.until ? 'До ' + new Date(b.until).toLocaleString('ru-RU') : 'Навсегда'} · {b.reason}</span><button type="button" onClick={() => changeApplicationBan(b.uid, null)} className="rounded bg-emerald-700 px-3 py-1 text-white">Разблокировать</button></div>)}</div>}
                       {adminApplications.length === 0 ? (
                         <p className="text-sm text-slate-400 py-6">
                           Заявок пока нет. Оставьте тестовую заявку во вкладке «Вступление».
@@ -1803,6 +1821,8 @@ export default function App() {
                                   </span>
                                 </div>
                                 <p className="text-xs text-slate-300">{app.experience}</p>
+                                {app.applicantEmail && <p className="text-xs text-slate-400">Google: {app.applicantEmail}</p>}
+                                {app.applicantUid && <div className="flex flex-wrap gap-2 pt-2"><button type="button" onClick={() => changeApplicationBan(app.applicantUid!, 24)} className="rounded bg-amber-700/40 px-3 py-1 text-xs text-amber-200">Блок 24 ч</button><button type="button" onClick={() => changeApplicationBan(app.applicantUid!, 168)} className="rounded bg-orange-700/40 px-3 py-1 text-xs text-orange-200">Блок 7 дней</button><button type="button" onClick={() => changeApplicationBan(app.applicantUid!, 0)} className="rounded bg-rose-800/50 px-3 py-1 text-xs text-rose-200">Блок навсегда</button></div>}
                               </div>
 
                               {app.status === 'pending' && (
