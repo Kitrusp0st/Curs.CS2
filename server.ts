@@ -781,14 +781,8 @@ app.post(
       if (cleanDiscord.length < 3) {
         return res.status(400).json({ error: 'Укажите ваш ник или ссылку в Discord.' });
       }
-      if (cleanExp.length < 4) {
-        return res.status(400).json({ error: 'Опишите ваш игровой опыт.' });
-      }
-      if (!cleanHours) {
-        return res.status(400).json({ error: 'Укажите, сколько часов в неделю вы играете.' });
-      }
-      if (cleanMotivation.length < 5) {
-        return res.status(400).json({ error: 'Напишите, почему вы хотите вступить в клан CURS.' });
+      if (cleanExp.length < 10) {
+        return res.status(400).json({ error: 'Описание игрового опыта должно содержать минимум 10 символов.' });
       }
 
       const duplicate = await checkRecentApplication24h(cleanDiscord, ipAddress);
@@ -804,8 +798,8 @@ app.post(
         age: parsedAge,
         discordLink: cleanDiscord,
         experience: cleanExp,
-        weeklyHours: cleanHours,
-        motivation: cleanMotivation,
+        weeklyHours: cleanHours || 'Не указано',
+        motivation: cleanMotivation || cleanExp,
         rulesAccepted: true,
         ipAddress,
         applicantUid: applicant.uid,
