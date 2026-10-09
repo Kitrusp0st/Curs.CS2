@@ -19,7 +19,6 @@ import {
   BookOpen,
   UserCheck,
   X,
-  Download,
 } from 'lucide-react';
 import {
   HERO_IMAGE_URL,
@@ -35,7 +34,7 @@ import { initAuth, googleSignIn, getIdToken, logout as firebaseLogout } from './
 // Optional HTTPS API origin for GitHub Pages. Keep empty for same-origin deployments.
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
-type PageTab = 'home' | 'about' | 'roster' | 'top' | 'apply' | 'admin' | 'docs';
+type PageTab = 'home' | 'about' | 'roster' | 'top' | 'apply' | 'profile' | 'admin' | 'docs';
 type AdminRole = 'leader' | 'deputy' | 'moderator' | 'member';
 
 interface AuthUser {
@@ -155,6 +154,7 @@ export default function App() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [googleLoginTarget, setGoogleLoginTarget] = useState<PageTab>('profile');
 
   // Public data states
   const [discordStatus, setDiscordStatus] = useState<DiscordStatus | null>(null);
@@ -411,7 +411,7 @@ export default function App() {
       if (result) {
         await fetchCurrentUser();
         setShowAuthModal(false);
-        setActiveTab('admin');
+        setActiveTab(googleLoginTarget);
       }
     } catch (err: any) {
       setAuthError(err.message || 'Ошибка входа через аккаунт Google');
@@ -427,11 +427,22 @@ export default function App() {
     }
   };
 
+  const openGoogleLogin = (target: PageTab) => {
+    setGoogleLoginTarget(target);
+    setAuthError(null);
+    setShowAuthModal(true);
+  };
+
   // Submit clan application
   const handleSubmitApplication = async (e: React.FormEvent) => {
     e.preventDefault();
     setAppErrorMessage(null);
     setAppSuccessMessage(null);
+    if (!authUser || authUser.authProvider !== 'firebase') {
+      setAppErrorMessage('Для отправки заявки войдите через Google.');
+      openGoogleLogin('apply');
+      return;
+    }
     setAppSubmitting(true);
 
     try {
@@ -761,6 +772,9 @@ export default function App() {
           >
             Вступление
           </button>
+          {authUser && (
+            <button type="button" onClick={() => setActiveTab('profile')} className="text-slate-300 hover:text-white whitespace-nowrap">Мой профиль</button>
+          )}
           {isTrustedStaff && (
             <button
               type="button"
@@ -777,15 +791,6 @@ export default function App() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <a
-            href="/api/download-site-zip"
-            download="curs-clan-site.zip"
-            className="px-3.5 py-2 text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/15 rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
-            title="Скачать все файлы сайта в формате ZIP"
-          >
-            <Download className="w-3.5 h-3.5 text-rose-400" />
-            <span>Скачать ZIP сайта</span>
-          </a>
           {authUser ? (
             <div className="flex items-center gap-2">
               {isTrustedStaff && (
@@ -836,6 +841,7 @@ export default function App() {
           { id: 'roster', label: `Состав (${roster.length})` },
           { id: 'top', label: 'Топ клана' },
           { id: 'apply', label: 'Вступление' },
+          ...(authUser ? [{ id: 'profile', label: 'Мой профиль' }] : []),
           ...(isTrustedStaff ? [{ id: 'admin', label: 'Админ-панель' }] : []),
         ].map((tab) => (
           <button
@@ -1470,6 +1476,12 @@ export default function App() {
                       </div>
                     )}
 
+                    {(!authUser || authUser.authProvider !== 'firebase') && (
+                      <div className="rounded-lg border border-rose-500/30 bg-rose-950/30 p-4 space-y-3">
+                        <p className="text-sm text-rose-100">Чтобы подать заявку, сначала войдите через Google. Для каждого игрока создаётся личный профиль.</p>
+                        <button type="button" onClick={() => openGoogleLogin('apply')} className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-900">Войти через Google</button>
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <div>
                         <label htmlFor="app-nick" className="block text-xs text-slate-300 mb-2">
@@ -1578,7 +1590,7 @@ export default function App() {
 
                     <button
                       type="submit"
-                      disabled={appSubmitting || !captchaToken || !captchaAnswer}
+                      disabled={appSubmitting || !captchaToken || !captchaAnswer || !authUser || authUser.authProvider !== 'firebase'}
                       className="w-full py-3.5 px-6 text-sm font-semibold bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       <Send className="w-4 h-4" />
@@ -2364,14 +2376,6 @@ https://ais-pre-do24evwwqilmq37crv4z7k-259283500817.asia-southeast1.run.app/auth
             >
               Документация и Деплой
             </button>
-            <a
-              href="/api/download-site-zip"
-              download="curs-clan-site.zip"
-              className="text-rose-400 hover:text-rose-300 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Скачать ZIP сайта</span>
-            </a>
             {!authUser && (
               <button
                 type="button"
@@ -2384,6 +2388,27 @@ https://ais-pre-do24evwwqilmq37crv4z7k-259283500817.asia-southeast1.run.app/auth
           </div>
         </div>
       </footer>
+
+      {activeTab === 'profile' && (
+        <section className="max-w-3xl mx-auto px-4 py-12">
+          <div className="rounded-2xl border border-white/10 bg-[#121218] p-6 sm:p-10 space-y-5">
+            <h1 className="text-3xl font-bold text-white">Личный профиль CURS</h1>
+            {authUser ? (
+              <>
+                <div className="rounded-xl border border-white/10 bg-[#09090D] p-5 space-y-3">
+                  <p className="text-slate-400 text-sm">Имя</p><p className="text-white font-semibold">{authUser.displayName}</p>
+                  <p className="text-slate-400 text-sm">Google / Email</p><p className="text-white break-all">{authUser.email}</p>
+                  <p className="text-slate-400 text-sm">Роль на сайте</p><p className="text-rose-400">{ROLE_LABELS[authUser.role]}</p>
+                  <p className="text-slate-400 text-sm">Способ входа</p><p className="text-white">{authUser.authProvider === 'firebase' ? 'Google' : 'Discord'}</p>
+                </div>
+                <button type="button" onClick={() => setActiveTab('apply')} className="rounded-lg bg-rose-600 px-5 py-3 text-white font-semibold">Подать заявку в клан</button>
+              </>
+            ) : (
+              <><p className="text-slate-300">Войдите через Google, чтобы открыть свой профиль.</p><button type="button" onClick={() => openGoogleLogin('profile')} className="rounded-lg bg-white px-5 py-3 text-slate-900 font-semibold">Войти через Google</button></>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Staff Authentication Modal (Discord OAuth2 + Google Sign-In) */}
       {showAuthModal && (
@@ -2400,10 +2425,10 @@ https://ais-pre-do24evwwqilmq37crv4z7k-259283500817.asia-southeast1.run.app/auth
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-xs text-rose-400 font-semibold mb-1">
-                  Закрытая авторизация персонала CURS
+                  Авторизация CURS
                 </div>
                 <h3 className="text-xl font-semibold text-white">
-                  Вход в панель администрации
+                  Вход в аккаунт CURS
                 </h3>
               </div>
               <button
@@ -2416,9 +2441,9 @@ https://ais-pre-do24evwwqilmq37crv4z7k-259283500817.asia-southeast1.run.app/auth
             </div>
 
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Вкладка «Админ-панель» скрыта от обычных посетителей. Авторизуйтесь через{' '}
+              Для личного профиля и подачи заявки используйте Google. Для персонала также доступен{' '}
               <strong className="text-white">Discord OAuth2</strong> (проверка ролей Лидер /
-              Заместитель / Модератор на сервере клана) или через аккаунт владельца{' '}
+              Заместитель / Модератор на сервере клана). Войти также можно через{' '}
               <strong className="text-white">Google</strong>.
             </p>
 
