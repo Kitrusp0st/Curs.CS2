@@ -105,7 +105,7 @@ interface ApplicationRecord {
   discordLink: string;
   role: string;
   kdRatio: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: 'new' | 'reviewing' | 'pending' | 'accepted' | 'rejected';
   reviewedBy?: string;
   applicantUid?: string;
   applicantEmail?: string;
@@ -1826,7 +1826,7 @@ export default function App() {
                                 {app.applicantUid && <div className="flex flex-wrap gap-2 pt-2"><button type="button" onClick={() => changeApplicationBan(app.applicantUid!, 24)} className="rounded bg-amber-700/40 px-3 py-1 text-xs text-amber-200">Блок 24 ч</button><button type="button" onClick={() => changeApplicationBan(app.applicantUid!, 168)} className="rounded bg-orange-700/40 px-3 py-1 text-xs text-orange-200">Блок 7 дней</button><button type="button" onClick={() => changeApplicationBan(app.applicantUid!, 0)} className="rounded bg-rose-800/50 px-3 py-1 text-xs text-rose-200">Блок навсегда</button></div>}
                               </div>
 
-                              {app.status === 'pending' && (
+                              {(['new', 'reviewing', 'pending'].includes(app.status)) && (
                                 <div className="flex flex-wrap items-center gap-2 shrink-0">
                                   <button
                                     type="button"
