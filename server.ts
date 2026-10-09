@@ -59,9 +59,9 @@ import {
   AdminRole,
   resolveAuthContext,
   requireRole,
+  requireAuth,
   signAdminSessionCookie,
 } from './src/middleware/auth.ts';
-import { buildProjectZipBuffer } from './src/lib/zipBuilder.ts';
 
 dotenv.config();
 
@@ -70,20 +70,6 @@ const PORT = Number(process.env.PORT || 3000);
 
 app.use(express.json({ limit: '8mb' }));
 app.use(cookieParser());
-
-// Download full website source code & assets as a ZIP archive
-app.get('/api/download-site-zip', (_req: Request, res: Response) => {
-  try {
-    const zipBuffer = buildProjectZipBuffer(process.cwd());
-    res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', 'attachment; filename="curs-clan-site.zip"');
-    res.setHeader('Content-Length', String(zipBuffer.length));
-    res.send(zipBuffer);
-  } catch (err: any) {
-    console.error('Error building project ZIP:', err);
-    res.status(500).json({ error: 'Не удалось сформировать ZIP-архив сайта.' });
-  }
-});
 
 // Prevent search engines from indexing /admin and /api/admin routes
 app.use(['/admin', '/api/admin'], (_req: Request, res: Response, next: NextFunction) => {
@@ -742,8 +728,10 @@ app.post(
   '/api/applications',
   rateLimiter(6, 60 * 1000),
   csrfProtection,
-  async (req: Request, res: Response) => {
+  requireAuth,
+  async (req: AuthRequest, res: Response) => {
     try {
+      if (req.adminContext?.authProvider !== 'firebase') return res.status(403).json({ error: 'Для подачи заявки войдите через Google.' });
       await initSeedOnce();
       const {
         nickname,
