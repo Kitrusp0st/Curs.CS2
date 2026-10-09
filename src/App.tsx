@@ -163,6 +163,24 @@ export default function App() {
   const [roster, setRoster] = useState<RosterMemberRecord[]>([]);
   const [news, setNews] = useState<ClanNewsRecord[]>([]);
 
+  const [captchaQuestion, setCaptchaQuestion] = useState('');
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaAnswer, setCaptchaAnswer] = useState('');
+  const refreshCaptcha = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/captcha/challenge`, { cache: 'no-store' });
+      if (!response.ok) throw new Error('Не удалось загрузить капчу');
+      const data = await response.json();
+      setCaptchaQuestion(data.question);
+      setCaptchaToken(data.token);
+      setCaptchaAnswer('');
+    } catch {
+      setCaptchaQuestion('Капча недоступна. Попробуйте обновить страницу.');
+      setCaptchaToken('');
+    }
+  }, []);
+  useEffect(() => { void refreshCaptcha(); }, [refreshCaptcha]);
+
   // Application form state
   const [appNick, setAppNick] = useState<string>('');
   const [appAge, setAppAge] = useState<string>('18');
@@ -428,6 +446,9 @@ export default function App() {
           kdRatio: appKd,
           discordLink: appDiscord,
           experience: appExperience,
+          captchaToken,
+          captchaAnswer,
+          rulesAccepted: true,
         }),
       });
 
@@ -442,8 +463,10 @@ export default function App() {
       setAppNick('');
       setAppExperience('');
       setAppDiscord('');
+      void refreshCaptcha();
     } catch (err: any) {
       setAppErrorMessage(err.message || 'Ошибка отправки анкеты');
+      void refreshCaptcha();
     } finally {
       setAppSubmitting(false);
     }
@@ -1545,9 +1568,17 @@ export default function App() {
                       />
                     </div>
 
+                    <div className="rounded-lg border border-white/10 bg-[#09090D] p-4 space-y-3">
+                      <label htmlFor="app-captcha" className="block text-sm text-slate-200">Проверка от спама · {captchaQuestion || 'Загрузка...'}</label>
+                      <div className="flex gap-3">
+                        <input id="app-captcha" type="number" required value={captchaAnswer} onChange={e => setCaptchaAnswer(e.target.value)} placeholder="Ответ" className="min-w-0 flex-1 rounded-lg border border-white/10 bg-[#121218] px-3 py-2 text-white" />
+                        <button type="button" onClick={() => void refreshCaptcha()} className="rounded-lg border border-white/20 px-3 py-2 text-sm text-slate-200">Другой пример</button>
+                      </div>
+                    </div>
+
                     <button
                       type="submit"
-                      disabled={appSubmitting}
+                      disabled={appSubmitting || !captchaToken || !captchaAnswer}
                       className="w-full py-3.5 px-6 text-sm font-semibold bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       <Send className="w-4 h-4" />
