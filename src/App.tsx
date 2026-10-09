@@ -560,6 +560,8 @@ export default function App() {
   };
 
   const handleAdminRemoveMember = async (id: number) => {
+    const member = roster.find(m => m.id === id);
+    if (!window.confirm(`Исключить ${member?.nickname || 'игрока'} из состава CURS?`)) return;
     try {
       const headers = await buildAuthHeaders(true);
       const res = await fetch(`${API_BASE_URL}/api/admin/roster/${id}`, {
@@ -571,7 +573,7 @@ export default function App() {
         const data = await res.json();
         throw new Error(data.error);
       }
-      setAdminFeedback('Участник удалён из ростера.');
+      setAdminFeedback('Игрок исключён из состава CURS.');
       fetchAdminDashboard();
       fetchPublicData();
     } catch (err: any) {
@@ -1927,6 +1929,19 @@ export default function App() {
                           Добавить в состав
                         </button>
                       </form>
+
+                      <div className="lg:col-span-12 bg-[#121218] border border-white/[0.08] rounded-xl p-6 space-y-4">
+                        <h3 className="text-base font-semibold text-white">Заблокированные заявители ({applicationBans.length})</h3>
+                        <p className="text-xs text-slate-400">Список блокировок подачи заявок. Разблокировка не добавляет игрока в состав.</p>
+                        {applicationBans.length === 0 ? <p className="text-sm text-slate-400">Заблокированных аккаунтов нет.</p> : (
+                          <div className="space-y-2">
+                            {applicationBans.map(b => <div key={b.uid} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-[#09090D] p-3">
+                              <div className="min-w-0"><p className="break-all text-sm text-white">{b.email || b.uid}</p><p className="text-xs text-slate-400">{b.until ? 'До ' + new Date(b.until).toLocaleString('ru-RU') : 'Навсегда'} · {b.reason}</p></div>
+                              <button type="button" onClick={() => { if (window.confirm('Снять блокировку подачи заявок?')) void changeApplicationBan(b.uid, null); }} className="rounded-lg bg-emerald-700 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-600">Разбанить</button>
+                            </div>)}
+                          </div>
+                        )}
+                      </div>
 
                       <div className="lg:col-span-7 bg-[#121218] border border-white/[0.08] rounded-xl p-6 space-y-4">
                         <h3 className="text-base font-semibold text-white">
