@@ -450,6 +450,11 @@ export default function App() {
     e.preventDefault();
     setAppErrorMessage(null);
     setAppSuccessMessage(null);
+    const kdValue = Number(appKd.trim().replace(',', '.'));
+    if (!Number.isFinite(kdValue) || kdValue < 1.10) {
+      setAppErrorMessage('Для вступления в CURS требуется K/D не ниже 1,10.');
+      return;
+    }
     if (!authUser || authUser.authProvider !== 'firebase') {
       setAppErrorMessage('Для отправки заявки войдите через Google.');
       openGoogleLogin('apply');
@@ -1463,7 +1468,7 @@ export default function App() {
                       Требования к кандидатам CURS:
                     </div>
                     <p>01. Возраст от 16 лет (возможны исключения по решению Лидера).</p>
-                    <p>02. Показатель K/D на паблике CrazyPub не ниже 1.35.</p>
+                    <p>02. Показатель K/D на паблике CrazyPub не ниже 1.10.</p>
                     <p>03. Наличие рабочего микрофона и присутствие на Discord-сервере клана.</p>
                     <a href={CLAN_DISCORD_INVITE} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-amber-400 underline underline-offset-4 hover:text-amber-300">Вступить в Discord клана CURS ↗</a>
                   </div>
@@ -1548,7 +1553,7 @@ export default function App() {
 
                       <div>
                         <label htmlFor="app-kd" className="block text-xs text-slate-300 mb-2">
-                          Текущий K/D на CrazyPub *
+                          Текущий K/D на CrazyPub * (не ниже 1,10)
                         </label>
                         <input
                           id="app-kd"
