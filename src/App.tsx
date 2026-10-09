@@ -32,6 +32,9 @@ import { ResilientImage } from './components/ResilientImage';
 import { GoogleDriveVault } from './components/GoogleDriveVault';
 import { initAuth, googleSignIn, getIdToken, logout as firebaseLogout } from './lib/firebase';
 
+// Optional HTTPS API origin for GitHub Pages. Keep empty for same-origin deployments.
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+
 type PageTab = 'home' | 'about' | 'roster' | 'top' | 'apply' | 'admin' | 'docs';
 type AdminRole = 'leader' | 'deputy' | 'moderator' | 'member';
 
@@ -219,7 +222,7 @@ export default function App() {
   const fetchCurrentUser = useCallback(async () => {
     try {
       const headers = await buildAuthHeaders(false);
-      const res = await fetch('/api/auth/me', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
         headers,
         credentials: 'include',
       });
@@ -238,7 +241,7 @@ export default function App() {
 
   const fetchPublicData = useCallback(async () => {
     try {
-      const res = await fetch('/api/public/data');
+      const res = await fetch(`${API_BASE_URL}/api/public/data`);
       if (res.ok) {
         const data = await res.json();
         setRoster(Array.isArray(data.roster) ? data.roster : []);
@@ -251,7 +254,7 @@ export default function App() {
 
   const fetchDiscordStatus = useCallback(async () => {
     try {
-      const res = await fetch('/api/discord/status');
+      const res = await fetch(`${API_BASE_URL}/api/discord/status`);
       if (res.ok) {
         const data = await res.json();
         setDiscordStatus(data);
@@ -264,7 +267,7 @@ export default function App() {
   const fetchLeaderboard = useCallback(async (force = false) => {
     setLoadingLeaderboard(true);
     try {
-      const res = await fetch(`/api/crazypub/leaderboard${force ? '?refresh=1' : ''}`);
+      const res = await fetch(`${API_BASE_URL}/api/crazypub/leaderboard${force ? '?refresh=1' : ''}`);
       if (res.ok) {
         const data = await res.json();
         setLeaderboard(data);
@@ -280,7 +283,7 @@ export default function App() {
     setAdminError(null);
     try {
       const headers = await buildAuthHeaders(false);
-      const res = await fetch('/api/admin/dashboard', {
+      const res = await fetch(`${API_BASE_URL}/api/admin/dashboard`, {
         headers,
         credentials: 'include',
       });
@@ -399,7 +402,7 @@ export default function App() {
 
   const handleLogout = async () => {
     await firebaseLogout();
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
     setAuthUser(null);
     if (activeTab === 'admin') {
       setActiveTab('home');
@@ -415,7 +418,7 @@ export default function App() {
 
     try {
       const headers = await buildAuthHeaders(true);
-      const res = await fetch('/api/applications', {
+      const res = await fetch(`${API_BASE_URL}/api/applications`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
@@ -454,7 +457,7 @@ export default function App() {
   ) => {
     try {
       const headers = await buildAuthHeaders(true);
-      const res = await fetch(`/api/admin/applications/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/applications/${id}`, {
         method: 'PATCH',
         headers,
         credentials: 'include',
@@ -480,7 +483,7 @@ export default function App() {
     e.preventDefault();
     try {
       const headers = await buildAuthHeaders(true);
-      const res = await fetch('/api/admin/roster', {
+      const res = await fetch(`${API_BASE_URL}/api/admin/roster`, {
         method: 'POST',
         headers,
         credentials: 'include',
@@ -509,7 +512,7 @@ export default function App() {
   const handleAdminRemoveMember = async (id: number) => {
     try {
       const headers = await buildAuthHeaders(true);
-      const res = await fetch(`/api/admin/roster/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/roster/${id}`, {
         method: 'DELETE',
         headers,
         credentials: 'include',
@@ -529,7 +532,7 @@ export default function App() {
   const handleAdminUpdateMemberRole = async (id: number, role: string) => {
     try {
       const headers = await buildAuthHeaders(true);
-      const res = await fetch(`/api/admin/roster/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/roster/${id}`, {
         method: 'PATCH',
         headers,
         credentials: 'include',
@@ -552,7 +555,7 @@ export default function App() {
     e.preventDefault();
     try {
       const headers = await buildAuthHeaders(true);
-      const res = await fetch('/api/admin/news', {
+      const res = await fetch(`${API_BASE_URL}/api/admin/news`, {
         method: 'POST',
         headers,
         credentials: 'include',
@@ -580,7 +583,7 @@ export default function App() {
   const handleAdminDeleteNews = async (id: number) => {
     try {
       const headers = await buildAuthHeaders(true);
-      const res = await fetch(`/api/admin/news/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/news/${id}`, {
         method: 'DELETE',
         headers,
         credentials: 'include',
@@ -602,7 +605,7 @@ export default function App() {
     e.preventDefault();
     try {
       const headers = await buildAuthHeaders(true);
-      const res = await fetch('/api/admin/notes', {
+      const res = await fetch(`${API_BASE_URL}/api/admin/notes`, {
         method: 'POST',
         headers,
         credentials: 'include',
@@ -626,7 +629,7 @@ export default function App() {
     setAdminError(null);
     try {
       const headers = await buildAuthHeaders(true);
-      const response = await fetch('/api/admin/developers/invite', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/developers/invite`, {
         method: 'POST', headers, credentials: 'include',
         body: JSON.stringify({ email: developerEmail, role: developerRole }),
       });
@@ -642,7 +645,7 @@ export default function App() {
   const handleAdminChangeUserRole = async (userId: number, role: AdminRole) => {
     try {
       const headers = await buildAuthHeaders(true);
-      const res = await fetch(`/api/admin/users/${userId}/role`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/role`, {
         method: 'PATCH',
         headers,
         credentials: 'include',
