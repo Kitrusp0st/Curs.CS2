@@ -11,26 +11,9 @@ import firebaseConfig from '../../firebase-applet-config.json';
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-export const SCOPES = [
-  'https://www.googleapis.com/auth/drive',
-  'https://www.googleapis.com/auth/drive.activity',
-  'https://www.googleapis.com/auth/drive.activity.readonly',
-  'https://www.googleapis.com/auth/drive.appdata',
-  'https://www.googleapis.com/auth/drive.apps.readonly',
-  'https://www.googleapis.com/auth/drive.file',
-  'https://www.googleapis.com/auth/drive.install',
-  'https://www.googleapis.com/auth/drive.meet.readonly',
-  'https://www.googleapis.com/auth/drive.metadata',
-  'https://www.googleapis.com/auth/drive.metadata.readonly',
-  'https://www.googleapis.com/auth/drive.photos.readonly',
-  'https://www.googleapis.com/auth/drive.readonly',
-  'https://www.googleapis.com/auth/drive.scripts',
-];
-
+// Google sign-in only needs basic identity. Do not request Drive permissions.
 export const googleAuthProvider = new GoogleAuthProvider();
-for (const scope of SCOPES) {
-  googleAuthProvider.addScope(scope);
-}
+googleAuthProvider.setCustomParameters({ prompt: 'select_account' });
 
 let isSigningIn = false;
 let cachedAccessToken: string | null = null;
@@ -59,18 +42,14 @@ export const initAuth = (
 
 export const googleSignIn = async (): Promise<{
   user: User;
-  accessToken: string;
+  accessToken: string | null;
   idToken: string;
 } | null> => {
   try {
     isSigningIn = true;
     const result = await signInWithPopup(auth, googleAuthProvider);
     const credential = GoogleAuthProvider.credentialFromResult(result);
-    if (!credential?.accessToken) {
-      throw new Error('Failed to get Google Drive OAuth access token from Firebase Auth');
-    }
-
-    cachedAccessToken = credential.accessToken;
+    cachedAccessToken = credential?.accessToken || null;
     cachedIdToken = await result.user.getIdToken();
     return {
       user: result.user,
