@@ -32,6 +32,11 @@ import {
   deleteTopPlayer,
   resetTopPlayersToDefault,
   checkRecentApplication24h,
+  getApplicationBan,
+  getApplicationBans,
+  getActiveApplicationForUser,
+  setApplicationBan,
+  clearApplicationBan,
   getApplications,
   createApplication,
   updateApplicationAdmin,
@@ -746,6 +751,11 @@ app.post(
       } = req.body;
 
       const ipAddress = getClientIp(req);
+      const applicant = req.adminContext!;
+      const ban = await getApplicationBan(applicant.uid);
+      if (ban) return res.status(403).json({ error: ban.until ? `Подача заявок заблокирована до ${new Date(ban.until).toLocaleString('ru-RU')}. Причина: ${ban.reason}` : `Подача заявок заблокирована бессрочно. Причина: ${ban.reason}` });
+      const active = await getActiveApplicationForUser(applicant.uid);
+      if (active) return res.status(409).json({ error: `У вас уже есть активная заявка #${active.id}. Дождитесь решения администрации.` });
 
       if (!validCaptcha(captchaToken, captchaAnswer)) {
         return res
@@ -802,6 +812,8 @@ app.post(
         motivation: cleanMotivation,
         rulesAccepted: true,
         ipAddress,
+        applicantUid: applicant.uid,
+        applicantEmail: applicant.email,
       });
 
       await createAuditLog({
@@ -822,6 +834,31 @@ app.post(
     }
   }
 );
+
+// Application-only bans: trusted staff can block submissions without disabling profiles.
+app.get('/api/admin/application-bans', requireRole(['leader', 'deputy', 'moderator']), async (_req: AuthRequest, res: Response) => {
+  res.json(await getApplicationBans());
+});
+app.post('/api/admin/application-bans', requireRole(['leader', 'deputy', 'moderator']), csrfProtection, async (req: AuthRequest, res: Response) => {
+  const { uid, durationHours, reason } = req.body || {};
+  const target = String(uid || '').trim();
+  const hours = Number(durationHours);
+  if (!target || target.length > 256 || !Number.isFinite(hours) || (hours !== 0 && (hours < 1 || hours > 87600))) return res.status(400).json({ error: 'Укажите аккаунт и срок (0 — навсегда, 1–87600 часов — временно).' });
+  const apps = await getApplications();
+  const owned = apps.find(a => a.applicantUid === target);
+  if (!owned) return res.status(404).json({ error: 'Аккаунт не найден среди заявителей.' });
+  const actor = req.adminContext!;
+  const cleanReason = String(reason || 'Многократная подача заявок').trim().slice(0, 300);
+  await setApplicationBan({ uid: target, email: owned.applicantEmail || '', until: hours === 0 ? null : new Date(Date.now() + hours * 3600000).toISOString(), reason: cleanReason, issuedBy: actor.displayName });
+  await createAuditLog({ actorName: actor.displayName, actorRole: actor.role, section: 'applications', action: 'Блокировка подачи заявок', details: `Аккаунт ${target}, срок ${hours === 0 ? 'навсегда' : hours + ' ч'}, причина: ${cleanReason}`, ipAddress: getClientIp(req), diffJson: null });
+  res.json({ ok: true });
+});
+app.delete('/api/admin/application-bans/:uid', requireRole(['leader', 'deputy', 'moderator']), csrfProtection, async (req: AuthRequest, res: Response) => {
+  const actor = req.adminContext!;
+  await clearApplicationBan(String(req.params.uid));
+  await createAuditLog({ actorName: actor.displayName, actorRole: actor.role, section: 'applications', action: 'Снятие блокировки заявок', details: `Аккаунт ${req.params.uid}`, ipAddress: getClientIp(req), diffJson: null });
+  res.json({ ok: true });
+});
 
 // ============================================================================
 // 5. PROTECTED ADMIN PANEL & MINI-CMS ROUTES (Server-Side RBAC)
