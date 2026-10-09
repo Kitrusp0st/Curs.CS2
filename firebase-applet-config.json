@@ -1,11 +1,9 @@
 {
-  "projectId": "peerless-team-wc9s2",
-  "appId": "1:325743257858:web:612eceee73a1f72c027a1b",
-  "apiKey": "AIzaSyAYcRqzM5vPYnYzk3GKB3xZyTVt5983Zj4",
-  "authDomain": "peerless-team-wc9s2.firebaseapp.com",
-  "storageBucket": "peerless-team-wc9s2.firebasestorage.app",
-  "messagingSenderId": "325743257858",
-  "measurementId": "",
-  "oAuthClientId": "325743257858-me9gh9khrnjb56us2kdfulfmrsdsfr9k.apps.googleusercontent.com",
-  "recaptchaSiteKey": ""
+  "apiKey": "AIzaSyAhjLN02Uqaenc-X5FtH1aPPJJea-woi6U",
+  "authDomain": "curs-cs2.firebaseapp.com",
+  "projectId": "curs-cs2",
+  "storageBucket": "curs-cs2.firebasestorage.app",
+  "messagingSenderId": "453430358405",
+  "appId": "1:453430358405:web:50cdd9d66f6866323c54ec",
+  "measurementId": "G-DEVW0TZYVK"
 }
