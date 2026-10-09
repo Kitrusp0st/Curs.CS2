@@ -56,6 +56,8 @@ export interface ApplicationRecord {
   commentsLogJson: string;
   ipAddress: string | null;
   reviewedBy: string | null;
+  applicantUid?: string;
+  applicantEmail?: string;
   createdAt: Date | string;
 }
 
@@ -187,6 +189,7 @@ interface LocalStoreState {
   contentVersions: ContentVersionRecord[];
   auditLogs: AuditLogRecord[];
   adminNotes: AdminNoteRecord[];
+  applicationBans: Array<{ uid: string; email: string; until: string | null; reason: string; issuedBy: string; createdAt: string }>;
 }
 
 let memoryStore: LocalStoreState | null = null;
@@ -198,6 +201,7 @@ function getEmptyStore(): LocalStoreState {
     users: [],
     clanRoles: [],
     applications: [],
+    applicationBans: [],
     rosterMembers: [],
     topPlayers: [],
     clanNews: [],
@@ -1051,6 +1055,32 @@ export async function checkRecentApplication24h(discordLink: string, ipAddress: 
   );
 }
 
+export async function getApplicationBan(uid: string) {
+  const store = loadStore();
+  return (store.applicationBans || []).find(b => b.uid === uid && (!b.until || new Date(b.until).getTime() > Date.now())) || null;
+}
+
+export async function setApplicationBan(data: { uid: string; email: string; until: string | null; reason: string; issuedBy: string }) {
+  const store = loadStore();
+  store.applicationBans = (store.applicationBans || []).filter(b => b.uid !== data.uid);
+  store.applicationBans.push({ ...data, createdAt: new Date().toISOString() });
+  saveStore();
+}
+
+export async function clearApplicationBan(uid: string) {
+  const store = loadStore();
+  store.applicationBans = (store.applicationBans || []).filter(b => b.uid !== uid);
+  saveStore();
+}
+
+export async function getApplicationBans() {
+  return (loadStore().applicationBans || []).filter(b => !b.until || new Date(b.until).getTime() > Date.now());
+}
+
+export async function getActiveApplicationForUser(uid: string) {
+  return loadStore().applications.find(a => a.applicantUid === uid && (a.status === 'new' || a.status === 'reviewing' || a.status === 'pending')) || null;
+}
+
 export async function getApplications() {
   const store = loadStore();
   return [...store.applications].sort(
@@ -1067,6 +1097,8 @@ export async function createApplication(data: {
   motivation: string;
   rulesAccepted: boolean;
   ipAddress: string;
+  applicantUid: string;
+  applicantEmail: string;
 }) {
   const store = loadStore();
   const created: ApplicationRecord = {
@@ -1085,6 +1117,8 @@ export async function createApplication(data: {
     commentsLogJson: '[]',
     ipAddress: data.ipAddress,
     reviewedBy: null,
+    applicantUid: data.applicantUid,
+    applicantEmail: data.applicantEmail,
     createdAt: new Date().toISOString(),
   };
 
