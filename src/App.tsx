@@ -166,21 +166,16 @@ export default function App() {
   const [roster, setRoster] = useState<RosterMemberRecord[]>([]);
   const [news, setNews] = useState<ClanNewsRecord[]>([]);
 
-  const [captchaQuestion, setCaptchaQuestion] = useState('');
+  const [captchaChecked, setCaptchaChecked] = useState(false);
   const [captchaToken, setCaptchaToken] = useState('');
-  const [captchaAnswer, setCaptchaAnswer] = useState('');
   const refreshCaptcha = useCallback(async () => {
+    setCaptchaChecked(false);
     try {
       const response = await fetch(`${API_BASE_URL}/api/captcha/challenge`, { cache: 'no-store' });
-      if (!response.ok) throw new Error('Не удалось загрузить капчу');
+      if (!response.ok) throw new Error('Капча недоступна');
       const data = await response.json();
-      setCaptchaQuestion(data.question);
       setCaptchaToken(data.token);
-      setCaptchaAnswer('');
-    } catch {
-      setCaptchaQuestion('Капча недоступна. Попробуйте обновить страницу.');
-      setCaptchaToken('');
-    }
+    } catch { setCaptchaToken(''); }
   }, []);
   useEffect(() => { void refreshCaptcha(); }, [refreshCaptcha]);
 
@@ -475,7 +470,7 @@ export default function App() {
           discordLink: appDiscord,
           experience: appExperience,
           captchaToken,
-          captchaAnswer,
+          captchaAnswer: captchaChecked,
           rulesAccepted: true,
         }),
       });
@@ -1597,17 +1592,18 @@ export default function App() {
                       />
                     </div>
 
-                    <div className="rounded-lg border border-white/10 bg-[#09090D] p-4 space-y-3">
-                      <label htmlFor="app-captcha" className="block text-sm text-slate-200">Проверка от спама · {captchaQuestion || 'Загрузка...'}</label>
-                      <div className="flex gap-3">
-                        <input id="app-captcha" type="number" required value={captchaAnswer} onChange={e => setCaptchaAnswer(e.target.value)} placeholder="Ответ" className="min-w-0 flex-1 rounded-lg border border-white/10 bg-[#121218] px-3 py-2 text-white" />
-                        <button type="button" onClick={() => void refreshCaptcha()} className="rounded-lg border border-white/20 px-3 py-2 text-sm text-slate-200">Другой пример</button>
-                      </div>
+                    <div className="rounded-lg border border-white/10 bg-[#09090D] p-4">
+                      <label className="flex items-center gap-3 text-sm text-slate-200 cursor-pointer">
+                        <input type="checkbox" checked={captchaChecked} onChange={e => setCaptchaChecked(e.target.checked)} disabled={!captchaToken} className="h-5 w-5 accent-rose-500" />
+                        <span>Я не робот</span>
+                        <span className="ml-auto text-xs text-slate-500">CURS · Проверка</span>
+                      </label>
+                      {!captchaToken && <button type="button" onClick={() => void refreshCaptcha()} className="mt-2 text-xs text-rose-400">Повторить загрузку проверки</button>}
                     </div>
 
                     <button
                       type="submit"
-                      disabled={appSubmitting || !captchaToken || !captchaAnswer || !authUser || authUser.authProvider !== 'firebase'}
+                      disabled={appSubmitting || !captchaToken || !captchaChecked || !authUser || authUser.authProvider !== 'firebase'}
                       className="w-full py-3.5 px-6 text-sm font-semibold bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       <Send className="w-4 h-4" />
