@@ -450,11 +450,6 @@ export default function App() {
     e.preventDefault();
     setAppErrorMessage(null);
     setAppSuccessMessage(null);
-    const kdValue = Number(appKd.trim().replace(',', '.'));
-    if (!Number.isFinite(kdValue) || kdValue < 1.10) {
-      setAppErrorMessage('Для вступления в CURS требуется K/D не ниже 1,10.');
-      return;
-    }
     if (!authUser || authUser.authProvider !== 'firebase') {
       setAppErrorMessage('Для отправки заявки войдите через Google.');
       openGoogleLogin('apply');
@@ -1553,7 +1548,7 @@ export default function App() {
 
                       <div>
                         <label htmlFor="app-kd" className="block text-xs text-slate-300 mb-2">
-                          Текущий K/D на CrazyPub * (не ниже 1,10)
+                          Текущий K/D на CrazyPub *
                         </label>
                         <input
                           id="app-kd"
