@@ -702,31 +702,27 @@ app.get('/api/public/data', async (_req: Request, res: Response) => {
   }
 });
 
-// Free, server-verified arithmetic challenge. Expires after 10 minutes.
+// Signed checkbox challenge: free lightweight check; rate limiting and account limits provide additional protection.
 app.get('/api/captcha/challenge', (_req: Request, res: Response) => {
-  const a = randomInt(2, 15);
-  const b = randomInt(2, 15);
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) return res.status(503).json({ error: 'Проверка недоступна.' });
   const expires = Date.now() + 10 * 60 * 1000;
   const nonce = randomInt(0, 2147483647);
-  const payload = `${a}:${b}:${expires}:${nonce}`;
-  const secret = process.env.SESSION_SECRET;
-  if (!secret) return res.status(503).json({ error: 'Капча временно недоступна.' });
+  const payload = `${expires}:${nonce}`;
   const signature = createHmac('sha256', secret).update(payload).digest('hex');
   res.setHeader('Cache-Control', 'no-store');
-  res.json({ question: `${a} + ${b} = ?`, token: `${payload}:${signature}` });
+  res.json({ token: `${payload}:${signature}` });
 });
 
 function validCaptcha(token: unknown, answer: unknown): boolean {
-  if (typeof token !== 'string' || !/^\\d+:\\d+:\\d+:\\d+:[a-f0-9]{64}$/.test(token)) return false;
-  const parts = token.split(':');
-  const [a, b, expires] = parts.slice(0, 3).map(Number);
-  if (Date.now() > expires || expires > Date.now() + 10 * 60 * 1000 || !Number.isInteger(Number(answer))) return false;
+  if (answer !== true || typeof token !== 'string' || !/^\\d+:\\d+:[a-f0-9]{64}$/.test(token)) return false;
+  const [expiresText, nonce, signature] = token.split(':');
+  const expires = Number(expiresText);
+  if (expires < Date.now() || expires > Date.now() + 10 * 60 * 1000) return false;
   const secret = process.env.SESSION_SECRET;
   if (!secret) return false;
-  const payload = parts.slice(0, 4).join(':');
-  const expected = Buffer.from(createHmac('sha256', secret).update(payload).digest('hex'), 'hex');
-  const received = Buffer.from(parts[4], 'hex');
-  return timingSafeEqual(expected, received) && Number(answer) === a + b;
+  const expected = Buffer.from(createHmac('sha256', secret).update(`${expiresText}:${nonce}`).digest('hex'), 'hex');
+  return timingSafeEqual(expected, Buffer.from(signature, 'hex'));
 }
 
 app.post(
@@ -760,7 +756,7 @@ app.post(
       if (!validCaptcha(captchaToken, captchaAnswer)) {
         return res
           .status(400)
-          .json({ error: 'Решите пример капчи. Если прошло 10 минут, обновите задание.' });
+          .json({ error: 'Поставьте галочку «Я не робот». Если проверка устарела, обновите страницу.' });
       }
 
       if (!rulesAccepted) {
