@@ -172,3 +172,22 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Consistent tactile feedback for buttons across the clan site and admin panel. */
+button:not(:disabled) {
+  transition: background-color .22s ease, color .22s ease, border-color .22s ease,
+              transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease, filter .22s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  button:not(:disabled):hover {
+    transform: translateY(-2px) scale(1.025);
+    filter: brightness(1.16);
+    box-shadow: 0 6px 20px -7px rgba(255, 255, 255, .18);
+  }
+  button:not(:disabled)[class*="emerald"]:hover { box-shadow: 0 8px 24px -6px rgba(16, 185, 129, .42); }
+  button:not(:disabled)[class*="rose"]:hover { box-shadow: 0 8px 24px -6px rgba(244, 63, 94, .40); }
+  button:not(:disabled)[class*="amber"]:hover,
+  button:not(:disabled)[class*="orange"]:hover { box-shadow: 0 8px 24px -6px rgba(245, 158, 11, .35); }
+}
+button:not(:disabled):active { transform: translateY(0) scale(.96); }
+button:disabled { cursor: not-allowed; opacity: .6; }
