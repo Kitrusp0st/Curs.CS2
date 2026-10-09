@@ -739,7 +739,6 @@ app.post(
         age,
         discordLink,
         experience,
-        kdRatio,
         weeklyHours,
         motivation,
         rulesAccepted,
@@ -768,8 +767,6 @@ app.post(
 
       const cleanNick = String(nickname || '').trim();
       const parsedAge = Number(age);
-      const kdValue = Number(String(kdRatio ?? '').trim().replace(',', '.'));
-      if (!Number.isFinite(kdValue) || kdValue < 1.10 || kdValue > 100) return res.status(400).json({ error: 'K/D на CrazyPub должен быть не ниже 1,10.' });
       const cleanDiscord = String(discordLink || '').trim();
       const cleanExp = String(experience || '').trim();
       const cleanHours = String(weeklyHours || '').trim();
