@@ -1583,12 +1583,13 @@ export default function App() {
 
                     <div>
                       <label htmlFor="app-exp" className="block text-xs text-slate-300 mb-2">
-                        Ваш игровой опыт (часы в CS2, Faceit Elo, прайм-тайм на CrazyPub) *
+                        Ваш игровой опыт (минимум 10 символов) *
                       </label>
                       <textarea
                         id="app-exp"
                         rows={3}
                         required
+                        minLength={10}
                         value={appExperience}
                         onChange={(e) => setAppExperience(e.target.value)}
                         placeholder="Опишите ваш опыт игры, любимые карты и время онлайна..."
